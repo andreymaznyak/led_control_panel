@@ -1,8 +1,11 @@
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 #include <ProcessScheduler.h>
-#include "LedControl.h"
 #include "ClockProcess.cpp"
+#include "LedArray.cpp"
+#include "../utils.h"
+
+//enum LED_CONTROL_PINS{ DIN_pin = D7, CLK_pin=D5, LOAD_pin=D6 };
 enum LED_CONTROL_PINS{ DIN_pin = D2, CLK_pin=D1, LOAD_pin=D0 };
 
 // Create my custom Blink Process
@@ -10,52 +13,51 @@ class LedArrayWatcherProcess : public Process
 {
 public:
     // Call the Process constructor
-    LedArrayWatcherProcess(Scheduler &manager, ProcPriority pr, unsigned int period,const int MAX7219_COUNT, ClockProcess * clock = NULL)
+    LedArrayWatcherProcess(Scheduler &manager, ProcPriority pr, unsigned int period, const int MAX7219_COUNT, ClockProcess * clock = NULL, LedArray * lc[2] = NULL)
         :  Process(manager, pr, period)
         {
           _clock = clock;
           _display_count = MAX7219_COUNT;
           _led_count = MAX7219_COUNT * 2;
-          lc = new LedControl(DIN_pin, CLK_pin, LOAD_pin, MAX7219_COUNT);
+          _arr_count = 1 + (MAX7219_COUNT > 8);
+          if(lc != NULL)
+            for(uint8_t i = 2; i--;){
+              _lc[i] = lc[i];
+            }
+
         }
     ~LedArrayWatcherProcess(){
-      delete lc;
+
     }
+    bool send_req = true;
 protected:
     virtual void setup()
     {
-      clean_all_led();
-      Serial.println("LedArrayWatcherProcess started");
+      //clean_all_led();
+      console.log("LedArrayWatcherProcess started");
     }
 
      // Undo setup()
     virtual void cleanup()
     {
-      clean_all_led(true);
+      //clean_all_led(true);
     }
 
     // Create our service routine
     virtual void service()
     {
+
       sendRequest();
     }
 private:
   int _display_count;
   int _led_count;
+  uint8_t _arr_count;
   ClockProcess * _clock;
   HTTPClient http;
-  LedControl * lc;
-  void clean_all_led(bool shutdown = false){
-    for(int k = 0; k < _led_count;k++){
-     lc->shutdown(k,shutdown);
-     /* Set the brightness to a medium values */
-     lc->setIntensity(k,15);
-     /* and clear the display */
-     lc->clearDisplay(k);
-    }
-  }
-  void sendRequest(){
+  LedArray * _lc[2];
 
+  void sendRequest(){
 
     http.begin("http://192.168.100.172:1337/orders1c/getOrders1cQueue");
     http.addHeader("cookie",   "magic1cCookie");
@@ -79,37 +81,25 @@ private:
               return;
             }
             int length = root["length"];
-            for(int k = _led_count; k--;){
-              lc->clearDisplay(k);
-            }
+            // for(int k = _led_count; k--;){
+            //   lc[0]->clearDisplay(k);
+            // }
             for(int k = 0; k < length; k++){
               int number = root["grouped"][k];
+              int position = root["grouped_position"][k];
               if(number > 0){
                 bool zeros = true;
-                for(int i = 0, shift=10000; i < 4;i++,shift /=10){
-                  if(!zeros ||  ((number % shift) / (shift / 10))>0){
-                    lc->setDigit((k+1)/2, i+(4*((k+1)%2)), (number % shift) / (shift / 10), false);
-                    zeros = false;
-                  }
-                }
+                _lc[0]->setDisplay(position,number);
               }
               Serial.println(number);
 
             }
-            if(_clock!=NULL){
-              //hours
-              lc->setDigit(0,0,(_clock->getHours()%100) / 10, false);
-              lc->setDigit(0,1,_clock->getHours()%10, true);
-              //minutes
-              lc->setDigit(0,2,(_clock->getMinutes()%100) / 10, false);
-              lc->setDigit(0,3,_clock->getMinutes()%10, false);
-            }
+
 
         }
     } else {
         Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
     }
-
     http.end();
   }
 };

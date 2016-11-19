@@ -8,17 +8,21 @@
 
 #include <WiFiUdp.h>
 #include "ClockProcess.cpp"
-//#include "ClockProcess.h"
+#include "LedArray.cpp"
 
 // Create my custom Blink Process
 class ClockProcess : public Process
 {
 public:
     // Call the Process constructor
-    ClockProcess(Scheduler &manager, ProcPriority pr, unsigned int period, const char* password = "")
+    ClockProcess(Scheduler &manager, ProcPriority pr, unsigned int period, LedArray * lc[2] = NULL)
         :  Process(manager, pr, period)
         {
           timeClient = new NTPClient(ntpUDP, "europe.pool.ntp.org", 60*60*10, 60000);
+          if(lc != NULL)
+            for(uint8_t i = 2; i--;){
+              _lc[i] = lc[i];
+            }
         }
     ~ClockProcess(){
       delete timeClient;
@@ -31,6 +35,11 @@ public:
       timeClient->update();
       return timeClient->getMinutes();
     }
+    int getSeconds(){
+      timeClient->update();
+      return timeClient->getSeconds();
+    }
+
 protected:
     virtual void setup()
     {
@@ -47,11 +56,17 @@ protected:
     // Create our service routine
     virtual void service()
     {
+      if(_lc[0] != NULL){
+        _clock_seconds_dot_state = !_clock_seconds_dot_state;
+        _lc[0]->setTimeOnDisplay(0, getHours(), getMinutes(), _clock_seconds_dot_state);
+      }
       timeClient->update();
     }
 private:
   WiFiUDP ntpUDP;
   NTPClient * timeClient;
+  LedArray * _lc[2];
+  bool _clock_seconds_dot_state = false;
 };
 
 #endif

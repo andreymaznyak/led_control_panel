@@ -1,3 +1,6 @@
+#ifndef _OTA_UPDATE_PROCESS_
+#define _OTA_UPDATE_PROCESS_
+
 #include <ArduinoOTA.h>
 #include <ProcessScheduler.h>
 
@@ -57,3 +60,4 @@ protected:
       ArduinoOTA.handle();
     }
 };
+#endif
