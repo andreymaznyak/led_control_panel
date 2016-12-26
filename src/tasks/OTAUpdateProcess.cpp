@@ -4,7 +4,6 @@
 #include <ArduinoOTA.h>
 #include <ProcessScheduler.h>
 
-// Create my custom Blink Process
 class OTAUpdateProcess : public Process
 {
 public:

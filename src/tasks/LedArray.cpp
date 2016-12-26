@@ -9,8 +9,9 @@ class LedArray{
       return _id;
     }
     LedArray(uint8_t id, int DIN_pin, int CLK_pin, int LOAD_pin, int MAX7219_COUNT = 1){
-      if(MAX7219_COUNT > 8)
+      if(MAX7219_COUNT > 8){
         console.log("WARNING MAX7219_COUNT MUST BE < 9");
+      }
       _lc = new LedControl(DIN_pin, CLK_pin, LOAD_pin, MAX7219_COUNT);
       _id = id;
       for(int addr = MAX7219_COUNT; addr--;){
@@ -19,8 +20,26 @@ class LedArray{
         _lc->setIntensity(addr,15);
         /* and clear the display */
         _lc->clearDisplay(addr);
-        console.log("clear ");
-        console.log(addr);
+        //console.log("clear ");
+        //console.log(addr);
+      }
+      for(int device=getDeviceCount() * 2;device--;){
+          setDisplay(device,1230 + device);
+      }
+      delay(1000);
+      for(int addr = MAX7219_COUNT; addr--;){
+        _lc->shutdown(addr,false);
+        /* Set the brightness to a medium values */
+        _lc->setIntensity(addr,15);
+
+
+
+
+
+        /* and clear the display */
+        _lc->clearDisplay(addr);
+        //console.log("clear ");
+        //console.log(addr);
       }
     }
     ~LedArray(){
@@ -32,6 +51,9 @@ class LedArray{
     }
     void setDigit(int chip_number, int digit_number, uint8_t digit_value, bool light_dot = false){
       _lc->setDigit(chip_number, digit_number, digit_value, light_dot);
+    }
+    void setChar(int chip_number, int digit_number, char digit_value, bool light_dot = false){
+      _lc->setChar(chip_number, digit_number, digit_value, light_dot);
     }
     void setDisplay(int display, uint16_t digit_value, uint8_t dots = 0){
       //убираем лидирующие нули
