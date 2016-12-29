@@ -3,10 +3,10 @@
 #include <Arduino.h>
 
 #define BTN_WATCHER_ENABLE
+
 #define DEBUG_SERIAL
-
-#define DEVICE_ID 1
-
+#define BUTTONS_DEBUG 0
+#define DEVICE_ID 4
 #define MAX7219_COUNT 12
 
 extern const char* ssid;

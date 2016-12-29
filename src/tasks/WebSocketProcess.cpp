@@ -20,7 +20,8 @@ enum CLIENT_EVENTS {
 
 enum SERVER_EVENTS {
   UPDATE_ARR_NUMBERS = 1,
-  SERVER_MESSAGE = 2
+  SERVER_MESSAGE = 2,
+  SET_DIGIT_COMPLETED = 3
 };
 
 
@@ -86,7 +87,7 @@ protected:
           Serial.println(data);
           #endif
 
-          StaticJsonBuffer<200> jsonBuffer;
+          StaticJsonBuffer<1024> jsonBuffer;
           JsonObject& root = jsonBuffer.parseObject(data);
 
           if (!root.success())
@@ -97,12 +98,33 @@ protected:
             #endif
           }
 
-          uint16_t action = root["action"];
+          int action = root["action"];
 
           switch(action){
             case SERVER_MESSAGE:
-              //TODO update led array numbers
 
+              break;
+              //TODO update led array numbers
+            case SET_DIGIT_COMPLETED:
+              if(true){
+                int number = root["number"];
+                int value = root["value"];
+                uint8_t index = number / 16;
+                uint8_t display = (number % 16) + (1 - index);
+                _lc[index]->completed[display] = (value == 1);
+              }
+              break;
+            case UPDATE_ARR_NUMBERS:
+              _lc[0]->clearDislays();
+              _lc[1]->clearDislays();
+              for(int i = 0; i < 24;i++){
+                int val = root["numbers_arr"][i];
+                uint8_t index = i / 16;
+                uint8_t display = (i % 16) + (1 - index);
+                if(val > 0){
+                  _lc[index]->setDisplay(display,val);
+                }
+              }
               break;
             default:
             #ifdef DEBUG_SERIAL
@@ -118,11 +140,11 @@ protected:
         #ifdef DEBUG_SERIAL
         Serial.printf("Client disconnected. wait to reconnect %d", sleep);
         #endif
-        if(!sleep){
-          connect();
-          sleep += 10;
-        }
-        sleep--;
+        //if(!sleep){
+        connect();
+        //  sleep += 10;
+        //}
+        //sleep--;
       }
 
     }
@@ -142,7 +164,7 @@ private:
   }
   void connect(){
     // Connect to the websocket server
-    if (client.connect("192.168.100.141", 1447)) {
+    if (client.connect("192.168.100.172", 1447)) {
       tcp_connected = true;
       #ifdef DEBUG_SERIAL
       Serial.println("Connected");
@@ -156,7 +178,7 @@ private:
 
     // Handshake with the server
     webSocketClient.path = "/device/0";
-    webSocketClient.host = "192.168.100.141:1447";
+    webSocketClient.host = "192.168.100.172:1447";
     if (webSocketClient.handshake(client)) {
       ws_connected = true;
       #ifdef DEBUG_SERIAL

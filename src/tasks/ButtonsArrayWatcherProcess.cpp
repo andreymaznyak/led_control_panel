@@ -148,18 +148,17 @@ protected:
               uint8_t arr_index = index < 16 ? 0 : 1,
                       arr_number = (index < 16 ? index  : index - 16);
 
-              _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
               _lc[0]->setChar(0,0,'p');
               _lc[0]->setChar(0,1,'A');
               _lc[0]->setChar(0,2,'0');
               _lc[0]->setChar(0,3,'C');
+              #if BUTTONS_DEBUG > 0
+              _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
+              #else
               if(_ws != NULL){
                 _ws->json((char*)&str, PRESS_BUTTON);
               }
-              _lc[0]->setChar(0,0,'0');
-              _lc[0]->setChar(0,1,'H');
-              _lc[0]->setChar(0,2,'_');
-              _lc[0]->setChar(0,3,'_');
+              #endif
               //Serial.printf("number %d (row %d, col %d) count %d on ...", index, row, col,  _buttons_status[index] >> 1);
             }
           }else if(_buttons_status[index] & 1){

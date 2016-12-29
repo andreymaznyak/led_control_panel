@@ -2,15 +2,25 @@
 #define _LED_ARRAY_
 #include "LedControl.h"
 #include "../utils.h"
+//#define TEST_LED_ARRAY
 //Max count max7219 modules is 8 -> 16 digits table
 class LedArray{
   public:
+    bool completed[16];
+    bool tick[16];
+    uint16_t val[16];
     uint8_t getId(){
       return _id;
     }
     LedArray(uint8_t id, int DIN_pin, int CLK_pin, int LOAD_pin, int MAX7219_COUNT = 1){
       if(MAX7219_COUNT > 8){
         console.log("WARNING MAX7219_COUNT MUST BE < 9");
+      }
+      // Инициализация
+      for(int i = 0; i < 16; i++) {
+        completed[i] = false;
+        tick[i] = false;
+        val[i] = 0;
       }
       _lc = new LedControl(DIN_pin, CLK_pin, LOAD_pin, MAX7219_COUNT);
       _id = id;
@@ -26,7 +36,11 @@ class LedArray{
       for(int device=getDeviceCount() * 2;device--;){
           setDisplay(device,1230 + device);
       }
+      #ifdef TEST_LED_ARRAY
+      delay(50000);
+      #else
       delay(1000);
+      #endif
       for(int addr = MAX7219_COUNT; addr--;){
         _lc->shutdown(addr,false);
         /* Set the brightness to a medium values */
@@ -55,7 +69,9 @@ class LedArray{
     void setChar(int chip_number, int digit_number, char digit_value, bool light_dot = false){
       _lc->setChar(chip_number, digit_number, digit_value, light_dot);
     }
-    void setDisplay(int display, uint16_t digit_value, uint8_t dots = 0){
+    void setDisplay(int display, uint16_t digit_value, uint8_t dots = 0, bool save = true){
+      if(save)
+        val[display] = digit_value;
       //убираем лидирующие нули
       uint8_t digits = 0;
       uint16_t temp_digit_value = digit_value;
@@ -67,6 +83,10 @@ class LedArray{
     }
     void setTimeOnDisplay(int display, int hours, int minutes, bool dots = true){
       setDisplay(display, hours * 100 + minutes, dots ? 2 : 0);
+    }
+    void clearDislays(){
+      for(int i = getDeviceCount();i--;)
+        _lc->clearDisplay(i);
     }
     void showTestNumbers(uint16_t prefix = 7600){
       for(int device=getDeviceCount() * 2;device--;){
