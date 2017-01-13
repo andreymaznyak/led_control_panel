@@ -156,7 +156,10 @@ protected:
               _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
               #else
               if(_ws != NULL){
+                _lc[arr_index]->val[arr_number] = 0;
+                _lc[arr_index]->completed[arr_number] = false;
                 _ws->json((char*)&str, PRESS_BUTTON);
+
               }
               #endif
               //Serial.printf("number %d (row %d, col %d) count %d on ...", index, row, col,  _buttons_status[index] >> 1);

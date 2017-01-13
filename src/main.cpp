@@ -4,6 +4,7 @@
 #include <WiFiUdp.h>
 #include <GDBStub.h>
 #include <ProcessScheduler.h>
+#include <ArduinoOTA.h>
 
 #include "./tasks/WebSocketProcess.cpp"
 
@@ -24,17 +25,43 @@ Scheduler sched;
 
 LedArray * lc[2];
 WebSocketProcess * p_ws = NULL;
+
+void setupWiFiAP(){
+  WiFi.mode(WIFI_AP);
+
+  // Do a little work to get a unique-ish name. Append the
+  // last two bytes of the MAC (HEX'd) to "Thing-":
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+  String AP_NameString = DEVICE_ID;
+
+  char AP_NameChar[AP_NameString.length() + 1];
+  memset(AP_NameChar, 0, AP_NameString.length() + 1);
+
+  for (int i=0; i<AP_NameString.length(); i++)
+    AP_NameChar[i] = AP_NameString.charAt(i);
+
+  WiFi.softAP(AP_NameChar, "andrewhous");
+}
 //static SocketIoClient * ws = NULL;
 void setup() {
-
+  static OTAUpdateProcess otaUpdate(sched, HIGH_PRIORITY,250,"0819");
+  otaUpdate.add(true);
   Serial.begin(115200);
+  ArduinoOTA.begin();
 
+  setupWiFiAP();
+  //WiFi.mode(WIFI_AP);//WIFI_STA);AP
+  WiFi.begin(SSID, PASSWORD);
 
-  WiFi.mode(WIFI_AP);//WIFI_STA);AP
-  WiFi.begin(ssid, password);
+  for(int i = 0; i < 50; i++){
+    ArduinoOTA.handle();
+    delay(100);
+  }
 
-
-  delay(5000);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     #ifdef DEBUG_SERIAL
     Serial.println("Connection Failed! Rebooting...");
@@ -53,11 +80,11 @@ void setup() {
   static WebSocketProcess ws(sched, LOW_PRIORITY, 500, lc);
   Serial.println(1);
   p_ws = &ws;
-  static OTAUpdateProcess otaUpdate(sched, HIGH_PRIORITY,250,"0819");
   Serial.println(2);
   static ClockProcess clock(sched, HIGH_PRIORITY,1000, lc, p_ws);
   Serial.println(3);
-  static CheckedOrdersWatcherProcess watcher_orders(sched, HIGH_PRIORITY, 200, lc);
+  static CheckedOrdersWatcherProcess watcher_orders(sched, HIGH_PRIORITY, 250, lc);
+
   //static LedArrayWatcherProcess ledArrWather(sched, LOW_PRIORITY, 10000, MAX7219_COUNT, &clock, lc);
   #ifdef BTN_WATCHER_ENABLE
   static ButtonsArrayWatcherProcess btnWather(sched, HIGH_PRIORITY, 100, PCF8574AP_SDA_PIN, PCF8574APSCL_PIN, SN74HC595_CLOCK_PIN, SN74HC595_LATCH_PIN, SN74HC595_DATA_PIN, lc, p_ws);
@@ -68,7 +95,7 @@ void setup() {
 
   //socket.add(true);
 //  Serial.println((int)&socket);
-  otaUpdate.add(true);
+
   //ledArrWather.add(true);
   clock.add(true);
   ws.add(true);

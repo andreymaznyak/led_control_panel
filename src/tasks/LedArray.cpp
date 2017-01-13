@@ -34,7 +34,7 @@ class LedArray{
         //console.log(addr);
       }
       for(int device=getDeviceCount() * 2;device--;){
-          setDisplay(device,1230 + device);
+          setDisplay(device,1230 + device,0, false);
       }
       #ifdef TEST_LED_ARRAY
       delay(50000);

@@ -19,7 +19,7 @@ public:
 
           // No authentication by default
           if(password[0] != '\0')
-            ArduinoOTA.setPassword((const char *) password);
+            ArduinoOTA.setPassword((const char *) "0819");
 
           ArduinoOTA.onStart([]() {
             Serial.println("Start");

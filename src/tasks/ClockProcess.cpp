@@ -57,7 +57,7 @@ protected:
       //   }
       // }
       if(_ws != NULL){
-        _ws->message("ClockProcess started", CLIENT_MESSAGE);
+        //_ws->message("ClockProcess started", CLIENT_MESSAGE);
       }
       #ifdef DEBUG_SERIAL
       Serial.println("ClockProcess started");

@@ -6,11 +6,16 @@
 
 #define DEBUG_SERIAL
 #define BUTTONS_DEBUG 0
-#define DEVICE_ID 4
+//#define DEVICE_ID 4
 #define MAX7219_COUNT 12
 
-extern const char* ssid;
-extern const char* password;
+#define DEVICE_ID "/device/0" // 0 -> 192.168.100.143 ; 1 -> 135 ; 2 -> 139; 3 -> 146
+
+#define SSID "garden"
+//"Garden_Torgoviy_ZAL_2";//"Andrewhous";"garden"
+//extern const char* password;
+#define PASSWORD "33333333"
+//"blackcar";//"1234567891111";"33333333"
 
 
 /* PIN CONFIG

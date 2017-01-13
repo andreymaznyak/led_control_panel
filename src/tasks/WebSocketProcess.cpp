@@ -107,11 +107,22 @@ protected:
               //TODO update led array numbers
             case SET_DIGIT_COMPLETED:
               if(true){
-                int number = root["number"];
+                String number = root["number"];
                 int value = root["value"];
-                uint8_t index = number / 16;
-                uint8_t display = (number % 16) + (1 - index);
+                int index = number.toInt()  / 16;
+                int display = (number.toInt()  % 16) + (1 - index);
+                //#define DEBUG_SET_COMPLETED_EVENT
+
+                #ifdef DEBUG_SET_COMPLETED_EVENT
+                data = data + " ind " + index + " display " + display + " number " + number + " value " + (bool)(value == 1);
+                char buf[128];
+                data.toCharArray(buf, 128);
+                message(buf,CLIENT_MESSAGE);
                 _lc[index]->completed[display] = (value == 1);
+                //sprintf(buf, " number: %s value: %s", number.toCharArray(), value.toCharArray());
+                #else
+                  _lc[index]->completed[display] = (value == 1);
+                #endif;
               }
               break;
             case UPDATE_ARR_NUMBERS:
@@ -147,6 +158,8 @@ protected:
         //sleep--;
       }
 
+
+      
     }
 
 private:
@@ -177,7 +190,7 @@ private:
     }
 
     // Handshake with the server
-    webSocketClient.path = "/device/0";
+    webSocketClient.path = DEVICE_ID;
     webSocketClient.host = "192.168.100.172:1447";
     if (webSocketClient.handshake(client)) {
       ws_connected = true;
