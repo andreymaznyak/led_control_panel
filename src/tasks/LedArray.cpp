@@ -70,8 +70,11 @@ class LedArray{
       _lc->setChar(chip_number, digit_number, digit_value, light_dot);
     }
     void setDisplay(int display, uint16_t digit_value, uint8_t dots = 0, bool save = true){
-      if(save)
+      if(save){
         val[display] = digit_value;
+        completed[display] = false;
+      }
+
       //убираем лидирующие нули
       uint8_t digits = 0;
       uint16_t temp_digit_value = digit_value;
@@ -79,10 +82,11 @@ class LedArray{
         digits++;
       }
       for(uint16_t i = 4, shift = 10; (i--) - (3 - digits); shift *= 10)
-        _lc->setDigit(display/2, i+display%2*(4), (digit_value % shift) / (shift / 10) , (dots >> i) & 1 );
+        for(uint16_t t = 100; t--;)
+          _lc->setDigit(display/2, i+display%2*(4), (digit_value % shift) / (shift / 10) , (dots >> i) & 1 );
     }
     void setTimeOnDisplay(int display, int hours, int minutes, bool dots = true){
-      setDisplay(display, hours * 100 + minutes, dots ? 2 : 0);
+      setDisplay(display, hours * 100 + minutes, dots ? 2 : 0, false);
     }
     void clearDislays(){
       for(int i = getDeviceCount();i--;)
@@ -90,7 +94,7 @@ class LedArray{
     }
     void showTestNumbers(uint16_t prefix = 7600){
       for(int device=getDeviceCount() * 2;device--;){
-        setDisplay(device, device + prefix, false);
+        setDisplay(device, device + prefix, false, false);
       }
     }
   protected:
