@@ -33,9 +33,16 @@ class LedArray{
         //console.log("clear ");
         //console.log(addr);
       }
-      for(int device=getDeviceCount() * 2;device--;){
-          setDisplay(device,1230 + device,0, false);
-      }
+
+      //for(uint8_t c = 3; c--;){
+
+        for(int device=getDeviceCount() * 2;device--;){
+            setDisplay(device,1230 + device,0, false);
+
+        }
+        delay(1000);
+      //}
+      delay(5000);
       #ifdef TEST_LED_ARRAY
       delay(50000);
       #else
@@ -82,7 +89,7 @@ class LedArray{
         digits++;
       }
       for(uint16_t i = 4, shift = 10; (i--) - (3 - digits); shift *= 10)
-        for(uint16_t t = 100; t--;)
+        for(uint16_t t = 75; t--;)
           _lc->setDigit(display/2, i+display%2*(4), (digit_value % shift) / (shift / 10) , (dots >> i) & 1 );
     }
     void setTimeOnDisplay(int display, int hours, int minutes, bool dots = true){

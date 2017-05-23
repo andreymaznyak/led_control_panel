@@ -5,7 +5,7 @@ A2,A1,A0 tied to ground = 0x20 (pcf8574) or 0x38 (pcf8574a)
 				__ __PCF
 		A0    [|  U  |] ++++
 		A1    [|     |] sda <->
-	    A2    [|     |] scl <->
+	  A2    [|     |] scl <->
 		IO-0  [|     |] INT ->
 		IO-1  [|     |] IO-7
 		IO-2  [|     |] IO-6
