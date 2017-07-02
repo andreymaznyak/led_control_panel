@@ -21,7 +21,8 @@ enum CLIENT_EVENTS {
 enum SERVER_EVENTS {
   UPDATE_ARR_NUMBERS = 1,
   SERVER_MESSAGE = 2,
-  SET_DIGIT_COMPLETED = 3
+  SET_DIGIT_COMPLETED = 3,
+  UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS = 4
 };
 
 
@@ -118,22 +119,36 @@ protected:
                 char buf[128];
                 data.toCharArray(buf, 128);
                 message(buf,CLIENT_MESSAGE);
+                // _lc[index]->completed[display] = (value == 1);
+                // //sprintf(buf, " number: %s value: %s", number.toCharArray(), value.toCharArray());
+                // #else
+                #endif
                 _lc[index]->completed[display] = (value == 1);
-                //sprintf(buf, " number: %s value: %s", number.toCharArray(), value.toCharArray());
-                #else
-                  _lc[index]->completed[display] = (value == 1);
-                #endif;
               }
               break;
             case UPDATE_ARR_NUMBERS:
               _lc[0]->clearDislays();
               _lc[1]->clearDislays();
-              for(int i = 0; i < 24;i++){
+              for( int i = 0; i < 24;i++ ){
                 int val = root["numbers_arr"][i];
                 uint8_t index = i / 16;
                 uint8_t display = (i % 16) + (1 - index);
                 if(val > 0){
                   _lc[index]->setDisplay(display,val);
+                }
+              }
+              break;
+            case UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS:
+              _lc[0]->clearDislays();
+              _lc[1]->clearDislays();
+              for( int i = 0; i < 24; i++ ){
+                int order_id = root["numbers_arr"][i]["order_id"];
+                bool is_checked = root["numbers_arr"][i]["is_checked"];
+                uint8_t index = i / 16;
+                uint8_t display = (i % 16) + (1 - index);
+                if(order_id > 0){
+                  _lc[index]->setDisplay(display, order_id);
+                  _lc[index]->completed[display] = is_checked;
                 }
               }
               break;
@@ -159,7 +174,7 @@ protected:
       }
 
 
-      
+
     }
 
 private:
