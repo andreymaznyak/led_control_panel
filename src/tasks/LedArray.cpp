@@ -88,9 +88,14 @@ class LedArray{
       while(temp_digit_value /= 10){
         digits++;
       }
-      for(uint16_t i = 4, shift = 10; (i--) - (3 - digits); shift *= 10)
-        for(uint16_t t = 75; t--;)
-          _lc->setDigit(display/2, i+display%2*(4), (digit_value % shift) / (shift / 10) , (dots >> i) & 1 );
+      //т.к светодиодных табло очень много, у нас есть SPI лини для управления ими 16 шт и 8шт
+      //Первый парамтр дисплей потом следуют цифры хитрая формула
+      for(uint16_t i = 4, shift = 10; (i--) - (3 - digits); shift *= 10) {
+        // for(uint16_t t = 75; t--;) цикл планировался для прогрева, но не помогло :(
+        _lc->setDigit(display/2, i+display%2*(4), (digit_value % shift) / (shift / 10) , (dots >> i) & 1 );
+      }
+
+
     }
     void setTimeOnDisplay(int display, int hours, int minutes, bool dots = true){
       setDisplay(display, hours * 100 + minutes, dots ? 2 : 0, false);

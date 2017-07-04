@@ -8,8 +8,9 @@
 #define BUTTONS_DEBUG 0
 //#define DEVICE_ID 4
 #define MAX7219_COUNT 12
-
-#define DEVICE_ID "/device/0" // 0 -> 192.168.100.143 ; 1 -> 135 ; 2 -> 139; 3 -> 146
+//Этот параметр должен быть уникальный для каждой стойки, ssid модуля
+// /device/0 и /device/1 - самовывоз /device/2 и /device/3 - доставка
+#define DEVICE_ID "/device/3" // 0 -> 192.168.100.143 ; 1 -> 135 ; 2 -> 139; 3 -> 146
 
 #define SSID "garden"
 //"Garden_Torgoviy_ZAL_2";//"Andrewhous";"garden"

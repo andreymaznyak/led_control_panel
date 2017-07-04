@@ -81,6 +81,7 @@ protected:
       if (client.connected()) {
 
         webSocketClient.getData(data);
+
         if (data.length() > 0) {
 
           #ifdef DEBUG_SERIAL
@@ -88,7 +89,7 @@ protected:
           Serial.println(data);
           #endif
 
-          StaticJsonBuffer<1024> jsonBuffer;
+          StaticJsonBuffer<2048> jsonBuffer;
           JsonObject& root = jsonBuffer.parseObject(data);
 
           if (!root.success())
@@ -97,6 +98,12 @@ protected:
             Serial.println("parseObject() failed");
             return;
             #endif
+            //Ошибка парсинга JSON
+            _lc[0]->setChar(0,0,'E');
+            _lc[0]->setChar(0,1,'0');
+            _lc[0]->setChar(0,2,'0');
+            _lc[0]->setChar(0,3,'1');
+            delay(1000);
           }
 
           int action = root["action"];
@@ -129,26 +136,48 @@ protected:
             case UPDATE_ARR_NUMBERS:
               _lc[0]->clearDislays();
               _lc[1]->clearDislays();
-              for( int i = 0; i < 24;i++ ){
+              // первая цепочка цифровых табло
+              for( int i = 0; i < 15;i++ ){
+
                 int val = root["numbers_arr"][i];
-                uint8_t index = i / 16;
-                uint8_t display = (i % 16) + (1 - index);
+                uint8_t display = (i % 16) + 1; // т.к первый это время делаем + 1
                 if(val > 0){
-                  _lc[index]->setDisplay(display,val);
+                  _lc[0]->setDisplay(display,val);
+                }
+              }
+              // вторая цепочка цифровых табло
+              for( int i = 15; i < 23;i++ ){
+
+                int val = root["numbers_arr"][i];
+                uint8_t display = i - 15;
+                if(val > 0){
+                  _lc[1]->setDisplay(display,val);
                 }
               }
               break;
             case UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS:
               _lc[0]->clearDislays();
               _lc[1]->clearDislays();
-              for( int i = 0; i < 24; i++ ){
+
+              // первая цепочка цифровых табло
+              for( int i = 0; i < 15;i++ ){
+
                 int order_id = root["numbers_arr"][i]["order_id"];
                 bool is_checked = root["numbers_arr"][i]["is_checked"];
-                uint8_t index = i / 16;
-                uint8_t display = (i % 16) + (1 - index);
+                uint8_t display = (i % 16) + 1; // т.к первый это время делаем + 1
                 if(order_id > 0){
-                  _lc[index]->setDisplay(display, order_id);
-                  _lc[index]->completed[display] = is_checked;
+                  _lc[0]->setDisplay(display, order_id);
+                  _lc[0]->completed[display] = is_checked;
+                }
+              }
+              // вторая цепочка цифровых табло
+              for( int i = 15; i < 23;i++ ){
+                int order_id = root["numbers_arr"][i]["order_id"];
+                bool is_checked = root["numbers_arr"][i]["is_checked"];
+                uint8_t display = i - 15;
+                if(order_id > 0){
+                  _lc[1]->setDisplay(display, order_id);
+                  _lc[1]->completed[display] = is_checked;
                 }
               }
               break;
@@ -156,6 +185,12 @@ protected:
             #ifdef DEBUG_SERIAL
             Serial.println("unknown action");
             #endif
+            //Ошибка неизвестное дейсвие
+            _lc[0]->setChar(0,0,'E');
+            _lc[0]->setChar(0,1,'0');
+            _lc[0]->setChar(0,2,'0');
+            _lc[0]->setChar(0,3,'2');
+            delay(1000);
           }
 
 
