@@ -3,7 +3,10 @@
 
 #include <ArduinoOTA.h>
 #include <ProcessScheduler.h>
-
+/**
+* @description Класс для процесса обновления через wifi
+*
+*/
 class OTAUpdateProcess : public Process
 {
 public:

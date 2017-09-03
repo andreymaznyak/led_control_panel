@@ -1,20 +1,38 @@
 #ifndef CONFIG
 #define CONFIG
 #include <Arduino.h>
-
+/**
+* @description Данная опция включает процесс который отсеживает состояния кнопок
+*              нажата ли какая то кнопка
+*/
 #define BTN_WATCHER_ENABLE
-
+/**
+* @description Данная опция включает отладку через Serial port
+*/
 #define DEBUG_SERIAL
+/**
+* @description 0 - кнопки работают в рабочем режиме, 1 - в тестовом, для проверки
+*              работоспособности кнопок, при нажатии будет инкрементится значение
+*              на светодиодном табло соответвующее кнопке
+*/
 #define BUTTONS_DEBUG 0
-//#define DEVICE_ID 4
+/**
+* @description Максимальное количество микросхем Maxim7219
+*/
 #define MAX7219_COUNT 12
-//Этот параметр должен быть уникальный для каждой стойки, ssid модуля
-// /device/0 и /device/1 - самовывоз /device/2 и /device/3 - доставка
+/**
+* @description Этот параметр должен быть уникальный для каждой стойки, ssid модуля
+*               /device/0 и /device/1 - самовывоз /device/2 и /device/3 - доставка
+*/
 #define DEVICE_ID "/device/3" // 0 -> 192.168.100.143 ; 1 -> 135 ; 2 -> 139; 3 -> 146
-
+/**
+* @description SSID wifi точки доступа к которой подключаться
+*/
 #define SSID "garden"
 //"Garden_Torgoviy_ZAL_2";//"Andrewhous";"garden"
-//extern const char* password;
+/**
+* @description Пароль от точки доступка к которой подключаться
+*/
 #define PASSWORD "33333333"
 //"blackcar";//"1234567891111";"33333333"
 

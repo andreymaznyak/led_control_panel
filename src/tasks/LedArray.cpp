@@ -2,13 +2,18 @@
 #define _LED_ARRAY_
 #include "LedControl.h"
 #include "../utils.h"
-//#define TEST_LED_ARRAY
 //Max count max7219 modules is 8 -> 16 digits table
+/**
+* @description Класс для работы со светодиодными табло, экземпляр класса создается
+*              для массива подключенных микросхем max7219, максимум в массиве 8
+*              микросхем, каждая из которых может управлять 7-сегметными 4х-циферными
+*              светодиодными табло
+*/
 class LedArray{
   public:
-    bool completed[16];
-    bool tick[16];
-    uint16_t val[16];
+    bool completed[16]; // Массив для того, что бы понять какой номер должен мигать
+    bool tick[16]; // Массив для реализации мигания номеров
+    uint16_t val[16]; // Массив для хранения номеров клиентов
     uint8_t getId(){
       return _id;
     }
@@ -30,8 +35,6 @@ class LedArray{
         _lc->setIntensity(addr,15);
         /* and clear the display */
         _lc->clearDisplay(addr);
-        //console.log("clear ");
-        //console.log(addr);
       }
       #ifdef TEST_LED_ARRAY
       for(int device=getDeviceCount() * 2;device--;){
@@ -40,20 +43,6 @@ class LedArray{
       }
       delay(50000);
       #endif
-      for(int addr = MAX7219_COUNT; addr--;){
-        _lc->shutdown(addr,false);
-        /* Set the brightness to a medium values */
-        _lc->setIntensity(addr,15);
-
-
-
-
-
-        /* and clear the display */
-        _lc->clearDisplay(addr);
-        //console.log("clear ");
-        //console.log(addr);
-      }
     }
     ~LedArray(){
       clean_all_led(true);
@@ -83,7 +72,6 @@ class LedArray{
       //т.к светодиодных табло очень много, у нас есть SPI лини для управления ими 16 шт и 8шт
       //Первый парамтр дисплей потом следуют цифры хитрая формула
       for(uint16_t i = 4, shift = 10; (i--) - (3 - digits); shift *= 10) {
-        // for(uint16_t t = 75; t--;) цикл планировался для прогрева, но не помогло :(
         _lc->setDigit(display/2, i+display%2*(4), (digit_value % shift) / (shift / 10) , (dots >> i) & 1 );
       }
 
