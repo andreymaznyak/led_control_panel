@@ -201,6 +201,12 @@ protected:
         #ifdef DEBUG_SERIAL
         Serial.printf("Client disconnected. wait to reconnect %d", sleep);
         #endif
+        _lc[0]->setChar(0,0,'E');
+        _lc[0]->setChar(0,1,'4');
+        _lc[0]->setChar(0,2,'0');
+        _lc[0]->setChar(0,3,'4');
+        ESP.restart();
+        delay(100);
         //if(!sleep){
         connect();
         //  sleep += 10;
@@ -234,8 +240,13 @@ private:
       #endif
     } else {
       #ifdef DEBUG_SERIAL
-      Serial.println("Connection failed.");
+      Serial.println("TCP Connection failed.");
       #endif
+      _lc[0]->setChar(0,0,'E');
+      _lc[0]->setChar(0,1,'4');
+      _lc[0]->setChar(0,2,'0');
+      _lc[0]->setChar(0,3,'5');
+      delay(100);
       tcp_connected = false;
     }
 
@@ -252,7 +263,11 @@ private:
       #ifdef DEBUG_SERIAL
       Serial.println("Handshake failed.");
       #endif
-
+      _lc[0]->setChar(0,0,'E');
+      _lc[0]->setChar(0,1,'4');
+      _lc[0]->setChar(0,2,'0');
+      _lc[0]->setChar(0,3,'6');
+      delay(100);
     }
     #ifdef DEBUG_SERIAL
     Serial.println("WEBSOCKET started");

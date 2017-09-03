@@ -57,25 +57,41 @@ void setup() {
   //WiFi.mode(WIFI_AP);//WIFI_STA);AP
   WiFi.begin(SSID, PASSWORD);
 
-  for(int i = 0; i < 50; i++){
+  for(int i = 0; i < 5; i++){
     ArduinoOTA.handle();
     delay(100);
   }
-
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    #ifdef DEBUG_SERIAL
-    Serial.println("Connection Failed! Rebooting...");
-    #endif
-    delay(5000);
-    ESP.restart();
-  }
-  Serial.println(WiFi.localIP());
   if(MAX7219_COUNT < 9)
     lc[0] = new LedArray(1,LEDTABLE1_DIN_pin, LEDTABLE1_CLK_pin, LEDTABLE1_LOAD_pin, MAX7219_COUNT);
   else{
     lc[0] = new LedArray(1,LEDTABLE1_DIN_pin, LEDTABLE1_CLK_pin, LEDTABLE1_LOAD_pin, 8);
     lc[1] = new LedArray(1,LEDTABLE2_DIN_pin,LEDTABLE2_CLK_pin,LEDTABLE2_LOAD_pin, MAX7219_COUNT - 8);
   }
+  lc[0]->setChar(0,0,'L');
+  lc[0]->setChar(0,1,'0');
+  lc[0]->setChar(0,2,'A');
+  lc[0]->setChar(0,3,'d');
+  for(int i = 0; i < 5; i++){
+    ArduinoOTA.handle();
+    delay(100);
+  }
+  lc[0]->setChar(0,0,'c');
+  lc[0]->setChar(0,1,'0');
+  lc[0]->setChar(0,2,'n');
+  lc[0]->setChar(0,3,'n');
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    #ifdef DEBUG_SERIAL
+    Serial.println("Connection Failed! Rebooting...");
+    #endif
+    lc[0]->setChar(0,0,'E');
+    lc[0]->setChar(0,1,'0');
+    lc[0]->setChar(0,2,'C');
+    lc[0]->setChar(0,3,'1');
+    delay(5000);
+    ESP.restart();
+  }
+  Serial.println(WiFi.localIP());
+
   //static SocketIoClient socket(sched, LOW_PRIORITY, 3000, server_ip, server_port);
   static WebSocketProcess ws(sched, LOW_PRIORITY, 500, lc);
   Serial.println(1);
@@ -111,11 +127,14 @@ void setup() {
   Serial.println(ipno2);
   #endif
 
-
+  lc[0]->setChar(0,0,'5');
+  lc[0]->setChar(0,1,'E');
+  lc[0]->setChar(0,2,'n');
+  lc[0]->setChar(0,3,'d');
   p_ws->json((char*)(&ipno2), CONNECT);
-  Serial.println(5);
   //console.log(WiFi.localIP());
   #ifdef DEBUG_SERIAL
+  Serial.println(5);
   Serial.println("wait for rx-tx support");
   #endif
   watcher_orders.add(true);

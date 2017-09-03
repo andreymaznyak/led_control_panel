@@ -148,19 +148,21 @@ protected:
               uint8_t arr_index = index < 16 ? 0 : 1,
                       arr_number = (index < 16 ? index  : index - 16);
 
-              _lc[0]->setChar(0,0,'p');
-              _lc[0]->setChar(0,1,'A');
-              _lc[0]->setChar(0,2,'0');
-              _lc[0]->setChar(0,3,'C');
+              _lc[0]->setChar(0,0,'5');
+              _lc[0]->setChar(0,1,'E');
+              _lc[0]->setChar(0,2,'n');
+              _lc[0]->setChar(0,3,'d');
               #if BUTTONS_DEBUG > 0
               _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
               #else
               _lc[arr_index]->setDisplay(arr_number + 1, 0);
+              _lc[arr_index]->val[arr_number + 1] = 0;
+              _lc[arr_index]->completed[arr_number + 1] = 0;
               if(_ws != NULL){
-                _lc[arr_index]->val[arr_number + 1] = 0;
-                _lc[arr_index]->completed[arr_number + 1] = false;
-                _ws->json((char*)&str, PRESS_BUTTON);
 
+                _ws->json((char*)&str, PRESS_BUTTON);
+                _lc[arr_index]->clearDisplay((arr_number + 1) / 2);
+                ESP.restart();
               }
               #endif
               //Serial.printf("number %d (row %d, col %d) count %d on ...", index, row, col,  _buttons_status[index] >> 1);

@@ -33,20 +33,12 @@ class LedArray{
         //console.log("clear ");
         //console.log(addr);
       }
-
-      //for(uint8_t c = 3; c--;){
-
-        for(int device=getDeviceCount() * 2;device--;){
-            setDisplay(device,1230 + device,0, false);
-
-        }
-        delay(1000);
-      //}
-      delay(5000);
       #ifdef TEST_LED_ARRAY
+      for(int device=getDeviceCount() * 2;device--;){
+          setDisplay(device,1230 + device,0, false);
+
+      }
       delay(50000);
-      #else
-      delay(1000);
       #endif
       for(int addr = MAX7219_COUNT; addr--;){
         _lc->shutdown(addr,false);
