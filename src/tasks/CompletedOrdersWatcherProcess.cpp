@@ -4,7 +4,11 @@
 #include <ArduinoOTA.h>
 #include <ProcessScheduler.h>
 #include "LedArray.cpp"
-
+/**
+* @description Класс для реализации мигания номеров, процесс при каждом событийном
+*              цикле проверяет переменную completed и tick в зависимости от этих
+*              переменных включает или выключает номер.
+*/
 class CheckedOrdersWatcherProcess : public Process
 {
 public:
@@ -37,16 +41,14 @@ protected:
       #ifdef DEBUG_SERIAL
       //Serial.println("tick watcher orders");
       #endif
-
-      for(int j = 1; j < 16; j++){
-        //Serial.printf("_lc[%d]->completed[%d] = %d  val = %d \n", 0, j, _lc[0]->completed[j],  _lc[0]->val[j]);
+      // TODO Избавиться от копипасты для 2 LedArray
+      for(int j = 1; j < 16; j++){ // Цикл для 1 LedArray
         if( (_lc[0]->completed[j]) && (_lc[0]->val[j] > 0) ){
-          if(_lc[0]->tick[j]){
+          if(_lc[0]->tick[j]){ // если tick то гасим номер
             for(int k = 0; k < 4; k++){
                 _lc[0]->setChar((j/2),k + (j % 2) * 4,' ',false);
             }
-            //_lc[0]->setDisplay(j, 8888, 0xFF, false);
-          }else{
+          }else{ // иначе показываем первоначальное значение
             _lc[0]->setDisplay(j, _lc[0]->val[j], 0, false);
           }
           _lc[0]->tick[j] = !( _lc[0]->tick[j] );
@@ -54,9 +56,8 @@ protected:
         }
       }
 
-      for(int j = 0; j < 8; j++){
-        //Serial.printf("_lc[%d]->completed[%d] = %d  val = %d \n", 1, j, _lc[1]->completed[j],  _lc[1]->val[j]);
-        if( ((_lc[1]->completed[j]) && (_lc[0]->val[j] > 0) ) /*&& (_lc[i]->val[j] > 0)*/ ){
+      for(int j = 0; j < 8; j++){ // Цикл для 2 LedArray
+        if( ((_lc[1]->completed[j]) && (_lc[0]->val[j] > 0) ) ){
           if(_lc[1]->tick[j]){
             _lc[1]->setDisplay(j, 8888, 0xFF, false);
           }else{

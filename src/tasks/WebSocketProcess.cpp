@@ -12,21 +12,24 @@
 #include "config.h"
 
 enum CLIENT_EVENTS {
-  CONNECT = 1,
-  CLIENT_MESSAGE = 2,
-  PRESS_BUTTON = 3,
+  CONNECT = 1, // Событие соединения клиента с сервером
+  CLIENT_MESSAGE = 2, // Событие при собщении от клиента
+  PRESS_BUTTON = 3, // Событие нажатия кнопки на клиенте
 
 };
 
 enum SERVER_EVENTS {
-  UPDATE_ARR_NUMBERS = 1,
-  SERVER_MESSAGE = 2,
-  SET_DIGIT_COMPLETED = 3,
-  UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS = 4
+  UPDATE_ARR_NUMBERS = 1, // требуется обновить номера клиентов на светодиодных табло
+  SERVER_MESSAGE = 2, // кастомное сообщение от сервера
+  SET_DIGIT_COMPLETED = 3, // требуется утановить какой то номер как completed (что бы мигал)
+  UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS = 4 // требуется обновить номера клиентов на светодиодных табло и установить как completed (что бы мигали)
 };
 
-
-
+/**
+* @description Процесс отвечает за принятие, отправку и обработку сообщений полученных
+*              по websocket соединению с nodejs сервером
+*
+*/
 class WebSocketProcess : public Process
 {
 public:
@@ -119,16 +122,13 @@ protected:
                 int value = root["value"];
                 int index = number.toInt()  / 16;
                 int display = (number.toInt()  % 16) + (1 - index);
-                //#define DEBUG_SET_COMPLETED_EVENT
 
                 #ifdef DEBUG_SET_COMPLETED_EVENT
                 data = data + " ind " + index + " display " + display + " number " + number + " value " + (bool)(value == 1);
                 char buf[128];
                 data.toCharArray(buf, 128);
                 message(buf,CLIENT_MESSAGE);
-                // _lc[index]->completed[display] = (value == 1);
-                // //sprintf(buf, " number: %s value: %s", number.toCharArray(), value.toCharArray());
-                // #else
+
                 #endif
                 _lc[index]->completed[display] = (value == 1);
               }
@@ -164,7 +164,7 @@ protected:
 
                 int order_id = root["numbers_arr"][i]["order_id"];
                 bool is_checked = root["numbers_arr"][i]["is_checked"];
-                uint8_t display = (i % 16) + 1; // т.к первый это время делаем + 1
+                uint8_t display = (i % 16) + 1; // т.к первый это время, делаем + 1
                 if(order_id > 0){
                   _lc[0]->setDisplay(display, order_id);
                   _lc[0]->completed[display] = is_checked;
@@ -207,11 +207,9 @@ protected:
         _lc[0]->setChar(0,3,'4');
         ESP.restart();
         delay(100);
-        //if(!sleep){
+
         connect();
-        //  sleep += 10;
-        //}
-        //sleep--;
+
       }
 
 

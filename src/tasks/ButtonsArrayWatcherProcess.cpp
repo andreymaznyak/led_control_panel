@@ -155,12 +155,12 @@ protected:
               #if BUTTONS_DEBUG > 0
               _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
               #else
-              _lc[arr_index]->setDisplay(arr_number + 1, 0);
+              _lc[arr_index]->hideDisplay(arr_number + 1);
+              _lc[arr_index]->val[arr_number + 1] = 0;
               _lc[arr_index]->completed[arr_number + 1] = 0;
               if(_ws != NULL){
 
                 _ws->json((char*)&str, PRESS_BUTTON);
-                _lc[arr_index]->clearDisplay((arr_number + 1) / 2);
                 ESP.restart();
               }
               #endif

@@ -29,13 +29,7 @@ class LedArray{
       }
       _lc = new LedControl(DIN_pin, CLK_pin, LOAD_pin, MAX7219_COUNT);
       _id = id;
-      for(int addr = MAX7219_COUNT; addr--;){
-        _lc->shutdown(addr,false);
-        /* Set the brightness to a medium values */
-        _lc->setIntensity(addr,15);
-        /* and clear the display */
-        _lc->clearDisplay(addr);
-      }
+
       #ifdef TEST_LED_ARRAY
       for(int device=getDeviceCount() * 2;device--;){
           setDisplay(device,1230 + device,0, false);
@@ -47,6 +41,15 @@ class LedArray{
     ~LedArray(){
       clean_all_led(true);
       delete _lc;
+    }
+    /**
+    * @description Функция выключает все сегменты одного цифрового табло
+    * @param display Номер цифрового табло
+    */
+    void hideDisplay(int display) {
+        for( int i = 4; i--;){
+          _lc->setChar( display/2, i + display%2*(4) , ' ', false);
+        }
     }
     void clearDisplay(int addr){
       _lc->clearDisplay(addr);
