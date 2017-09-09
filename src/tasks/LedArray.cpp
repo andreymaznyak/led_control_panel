@@ -29,7 +29,7 @@ class LedArray{
       }
       _lc = new LedControl(DIN_pin, CLK_pin, LOAD_pin, MAX7219_COUNT);
       _id = id;
-
+      clean_all_led();
       #ifdef TEST_LED_ARRAY
       for(int device=getDeviceCount() * 2;device--;){
           setDisplay(device,1230 + device,0, false);
