@@ -126,11 +126,6 @@ void setup() {
   }
   Serial.println(ipno2);
   #endif
-
-  lc[0]->setChar(0,0,'5');
-  lc[0]->setChar(0,1,'E');
-  lc[0]->setChar(0,2,'n');
-  lc[0]->setChar(0,3,'d');
   p_ws->json((char*)(&ipno2), CONNECT);
   //console.log(WiFi.localIP());
   #ifdef DEBUG_SERIAL
