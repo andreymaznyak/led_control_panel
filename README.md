@@ -11,7 +11,7 @@
 На одной плате 2 микросхемы, каждая микросхема управляет 2
 семисегметными 4х циферными табло, с общим катодом.
 Я распаял печатные платы по 2 микросхемы Maxim7219 для последовательного подключения.  
-Схема плат:  
+Схема плат, разводку плат делал в программе Sprint layout, файлы лежат в [папке hardware](https://github.com/andreymaznyak/led_control_panel/tree/master/hardware):  
 ![](https://github.com/andreymaznyak/led_control_panel/blob/master/docs/img/MAX7219-circuit.GIF)  
 1. Матрица кнопок
 
