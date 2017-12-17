@@ -7,7 +7,7 @@
 #include <ArduinoOTA.h>
 
 #include "./tasks/WebSocketProcess.cpp"
-
+#include "./tasks/TcpSocketProcess.cpp"
 #include "config.h"
 
 //#include "./tasks/SocketIoClient.cpp"
@@ -25,6 +25,7 @@ Scheduler sched;
 
 LedArray * lc[2];
 WebSocketProcess * p_ws = NULL;
+TcpSocketProcess * p_tcp = NULL;
 
 void setupWiFiAP(){
   WiFi.mode(WIFI_AP);
@@ -36,7 +37,7 @@ void setupWiFiAP(){
   String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
                  String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
   macID.toUpperCase();
-  String AP_NameString = DEVICE_ID;
+  String AP_NameString = DEVICE_ID_STR;
 
   char AP_NameChar[AP_NameString.length() + 1];
   memset(AP_NameChar, 0, AP_NameString.length() + 1);
@@ -97,6 +98,9 @@ void setup() {
   Serial.println(1);
   p_ws = &ws;
   Serial.println(2);
+  static TcpSocketProcess tcp(sched, LOW_PRIORITY, 100, lc);
+  p_tcp = &tcp;
+
   static ClockProcess clock(sched, HIGH_PRIORITY,1000, lc, p_ws);
   Serial.println(3);
   static CheckedOrdersWatcherProcess watcher_orders(sched, HIGH_PRIORITY, 250, lc);
@@ -115,6 +119,7 @@ void setup() {
   //ledArrWather.add(true);
   clock.add(true);
   ws.add(true);
+  tcp.add(true);
   Serial.println(4);
   char ipno2[64];
   IPAddress ipno = WiFi.localIP();

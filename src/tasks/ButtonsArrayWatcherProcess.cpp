@@ -165,7 +165,7 @@ protected:
                 _lc[arr_index]->val[arr_number] = 0;
                 _lc[arr_index]->completed[arr_number] = 0;
                 // Для отладки добавить ESP.restart();
-                ESP.restart();
+                // ESP.restart();
               }
               #endif
               //Serial.printf("number %d (row %d, col %d) count %d on ...", index, row, col,  _buttons_status[index] >> 1);

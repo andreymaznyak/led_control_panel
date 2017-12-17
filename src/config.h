@@ -24,7 +24,8 @@
 * @description Этот параметр должен быть уникальный для каждой стойки, ssid модуля
 *               /device/0 и /device/1 - самовывоз /device/2 и /device/3 - доставка
 */
-#define DEVICE_ID "/device/0" // (3 -> 138) (2 -> 135) (1 -> 132) (0 -> 129)
+#define DEVICE_ID 2 // (3 -> 138) (2 -> 135) (1 -> 132) (0 -> 129)
+#define DEVICE_ID_STR "device/2"
 /**
 * @description SSID wifi точки доступа к которой подключаться
 */
@@ -35,8 +36,9 @@
 */
 #define PASSWORD "33333333"
 //"blackcar";//"1234567891111";"33333333"
-
-
+#define TCP_SOCKET_HOST "192.168.100.172"
+#define TCP_SOCKET_PORT 1677
+#define SOFTVARE_VERSION 2
 /* PIN CONFIG
 Конфиги пинов для матрицы кнопок, матрица кнопок управляется помощью
 расширителя портов PCF8574AP и сдвигового регистра SN72HC595
