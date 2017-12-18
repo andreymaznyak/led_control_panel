@@ -1,4 +1,4 @@
-                                                                              #ifndef _CLOCK_PROCESS_
+#ifndef _CLOCK_PROCESS_
 
 #define _CLOCK_PROCESS_
 
@@ -17,65 +17,71 @@
 class ClockProcess : public Process
 {
 public:
-    // Call the Process constructor
-    ClockProcess(Scheduler &manager, ProcPriority pr, unsigned int period, LedArray * lc[2] = NULL, WebSocketProcess * ws = NULL)
-        :  Process(manager, pr, period)
-        {
-          timeClient = new NTPClient(ntpUDP, "europe.pool.ntp.org", 60*60*10, 60000);
-          if(lc != NULL)
-            for(uint8_t i = 2; i--;){
-              _lc[i] = lc[i];
-            }
-          _ws = ws;
-        }
-    ~ClockProcess(){
-      delete timeClient;
+  // Call the Process constructor
+  ClockProcess(Scheduler &manager, ProcPriority pr, unsigned int period, LedArray *lc[2] = NULL)
+      : Process(manager, pr, period)
+  {
+    timeClient = new NTPClient(ntpUDP, "europe.pool.ntp.org", 60 * 60 * 10, 60000);
+    if (lc != NULL)
+    {
+      for (uint8_t i = 2; i--;)
+      {
+        _lc[i] = lc[i];
+      }
     }
-    int getHours(){
-      timeClient->update();
-      return timeClient->getHours();
-    }
-    int getMinutes(){
-      timeClient->update();
-      return timeClient->getMinutes();
-    }
-    int getSeconds(){
-      timeClient->update();
-      return timeClient->getSeconds();
-    }
+  }
+  ~ClockProcess()
+  {
+    delete timeClient;
+  }
+  int getHours()
+  {
+    timeClient->update();
+    return timeClient->getHours();
+  }
+  int getMinutes()
+  {
+    timeClient->update();
+    return timeClient->getMinutes();
+  }
+  int getSeconds()
+  {
+    timeClient->update();
+    return timeClient->getSeconds();
+  }
 
 protected:
-    virtual void setup()
-    {
-      timeClient->begin();
+  virtual void setup()
+  {
+    timeClient->begin();
 
-      #ifdef DEBUG_SERIAL
-      Serial.println("ClockProcess started");
-      #endif
+#ifdef DEBUG_SERIAL
+    Serial.println("ClockProcess started");
+#endif
+  }
+
+  // Undo setup()
+  virtual void cleanup()
+  {
+  }
+
+  // Create our service routine
+  virtual void service()
+  {
+    if (_lc[0] != NULL)
+    {
+      _clock_seconds_dot_state = !_clock_seconds_dot_state;
+      _lc[0]->setTimeOnDisplay(0, getHours(), getMinutes(), _clock_seconds_dot_state);
     }
 
-     // Undo setup()
-    virtual void cleanup()
-    {
+    timeClient->update();
+  }
 
-    }
-
-    // Create our service routine
-    virtual void service()
-    {
-      if(_lc[0] != NULL){
-        _clock_seconds_dot_state = !_clock_seconds_dot_state;
-        _lc[0]->setTimeOnDisplay(0, getHours(), getMinutes(), _clock_seconds_dot_state);
-      }
-
-      timeClient->update();
-    }
 private:
   WiFiUDP ntpUDP;
   int _heapSize;
-  WebSocketProcess * _ws = NULL;
-  NTPClient * timeClient;
-  LedArray * _lc[2];
+  NTPClient *timeClient;
+  LedArray *_lc[2];
   bool _clock_seconds_dot_state = false;
 };
 

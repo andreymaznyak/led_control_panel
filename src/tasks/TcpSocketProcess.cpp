@@ -59,23 +59,23 @@
  * 
  **/
 
-enum CLIENT_EVENTS
+enum CLIENT_EVENTS_V2
 {
-    CLIENT_INFO = 1, // Событие соединения клиента с сервером
-    PRESS_BUTTON = 2 // Событие нажатия кнопки на клиенте
+    CLIENT_INFO_V2 = 1, // Событие соединения клиента с сервером
+    PRESS_BUTTON_V2 = 2 // Событие нажатия кнопки на клиенте
 };
 
-enum SERVER_EVENTS
+enum SERVER_EVENTS_V2
 {
-    SET_DIGIT_COMPLETED = 3,                     // требуется утановить какой то номер как completed (что бы мигал)
-    UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS = 4, // требуется обновить номера клиентов на светодиодных табло и установить как completed (что бы мигали)
-    RESTART = 5,
-    GET_INFO = 6
+    SET_DIGIT_COMPLETED_V2 = 3,                     // требуется утановить какой то номер как completed (что бы мигал)
+    UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS_V2 = 4, // требуется обновить номера клиентов на светодиодных табло и установить как completed (что бы мигали)
+    RESTART_V2 = 5,
+    GET_INFO_V2 = 6
 };
 
 struct ClientInfoPackage
 {
-    uint8_t messageId = CLIENT_INFO;
+    uint8_t messageId = CLIENT_INFO_V2;
     uint8_t ip0 = 0;
     uint8_t ip1 = 0;
     uint8_t ip2 = 0;
@@ -88,29 +88,29 @@ struct ClientInfoPackage
 
 struct PressButtonPackage
 {
-    uint8_t messageId = PRESS_BUTTON;
+    uint8_t messageId = PRESS_BUTTON_V2;
     uint8_t pressButtonIndex = 0;
 };
 
 struct GetInfoPackage
 {
-    uint8_t messageId = GET_INFO;
+    uint8_t messageId = GET_INFO_V2;
 };
 
 struct RestartPackage
 {
-    uint8_t messageId = RESTART;
+    uint8_t messageId = RESTART_V2;
 };
 
 struct UpdateNumbersPackage
 {
-    uint8_t messageId = UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS;
+    uint8_t messageId = UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS_V2;
     uint8_t numbers[48];
 };
 
 struct SetDigitCompletedPackage
 {
-    uint8_t messageId = SET_DIGIT_COMPLETED;
+    uint8_t messageId = SET_DIGIT_COMPLETED_V2;
     uint8_t index = 0;
 };
 
@@ -123,23 +123,18 @@ class TcpSocketProcess : public Process
 {
   public:
     // Call the Process constructor
-    TcpSocketProcess(Scheduler &manager, ProcPriority pr, unsigned int period, LedArray * lc[2] = NULL)
+    TcpSocketProcess(Scheduler &manager, ProcPriority pr, unsigned int period, LedArray *lc[2] = NULL)
         : Process(manager, pr, period)
     {
-         if(lc != NULL) {
-            for(uint8_t i = 2; i--;){
-              _lc[i] = lc[i];
+        if (lc != NULL)
+        {
+            for (uint8_t i = 2; i--;)
+            {
+                _lc[i] = lc[i];
             }
-         }
-            
+        }
     }
     void send(char *message)
-    {
-    }
-    void message(char *message, CLIENT_EVENTS action)
-    {
-    }
-    void json(char *message, CLIENT_EVENTS action)
     {
     }
     void sendDeviceInfo()
@@ -150,7 +145,7 @@ class TcpSocketProcess : public Process
     void sendButtonPress(uint8_t index)
     {
         struct PressButtonPackage info;
-        info.messageId = 2;
+        info.messageId = PRESS_BUTTON_V2;
         info.pressButtonIndex = index;
         client.write((uint8_t *)&(info), 2);
     }
@@ -191,21 +186,21 @@ class TcpSocketProcess : public Process
                 {
                     switch (buff[cur])
                     {
-                    case SET_DIGIT_COMPLETED:
+                    case SET_DIGIT_COMPLETED_V2:
                         setCompletedNumber(buff[cur + 1]);
                         sendButtonPress(buff[cur + 1]);
                         cur += 2;
                         break;
-                    case GET_INFO:
+                    case GET_INFO_V2:
                         sendDeviceInfo();
                         cur++;
                         break;
-                    case RESTART:
-                        // ESP.restart();
+                    case RESTART_V2:
+                        ESP.restart();
                         Serial.println("restart");
                         cur++;
                         break;
-                    case UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS:
+                    case UPDATE_ARR_NUMBERS_AND_COMPLETED_STATUS_V2:
                         updateNumbers((void *)(buff + cur));
                         cur += 49;
                         break;
@@ -235,13 +230,13 @@ class TcpSocketProcess : public Process
         }
         else
         {
-            #ifdef DEBUG_SERIAL
+#ifdef DEBUG_SERIAL
             Serial.println("TCP Connection failed.");
-            #endif
-            _lc[0]->setChar(0,0,'E');
-            _lc[0]->setChar(0,1,'4');
-            _lc[0]->setChar(0,2,'0');
-            _lc[0]->setChar(0,3,'5');
+#endif
+            _lc[0]->setChar(0, 0, 'E');
+            _lc[0]->setChar(0, 1, '4');
+            _lc[0]->setChar(0, 2, '0');
+            _lc[0]->setChar(0, 3, '5');
             delay(100);
             tcp_connected = false;
         }
@@ -258,39 +253,41 @@ class TcpSocketProcess : public Process
             bool isCompleted = (info->numbers[i]) >> 7;
             uint16_t clientNumber = ((info->numbers[i] << 8) & ~(1 << 15)) + (info->numbers[i + 1]);
             // Serial.printf("%u-%u-%u,", i, clientNumber, isCompleted);
-            uint8_t display = ((i/2) % 16) + 1; // т.к первый это время, делаем + 1
-            if(clientNumber > 0){
+            uint8_t display = ((i / 2) % 16) + 1; // т.к первый это время, делаем + 1
+            if (clientNumber > 0)
+            {
                 _lc[0]->setDisplay(display, clientNumber);
                 _lc[0]->completed[display] = isCompleted;
             }
-            
         }
-        for ( int i = 30; i < 48; i+= 2) {
+        for (int i = 30; i < 48; i += 2)
+        {
             bool isCompleted = (info->numbers[i]) >> 7;
             uint16_t clientNumber = ((info->numbers[i] << 8) & ~(1 << 15)) + (info->numbers[i + 1]);
 
             // Serial.printf("%u-%u-%u,", i, clientNumber, isCompleted);
-            uint8_t display = (i/2) - 15; // т.к первый это время, делаем + 1
-            if(clientNumber > 0){
+            uint8_t display = (i / 2) - 15; // т.к первый это время, делаем + 1
+            if (clientNumber > 0)
+            {
                 _lc[1]->setDisplay(display, clientNumber);
                 _lc[1]->completed[display] = isCompleted;
             }
         }
-        
     }
     void setCompletedNumber(uint8_t indexInfo)
     {
         bool isCompleted = indexInfo >> 7;
         uint8_t indexValue = indexInfo & ~(1 << 7);
 
-        int index = indexValue  / 16;
-        int display = (indexValue  % 16) + (1 - index);
+        int index = indexValue / 16;
+        int display = (indexValue % 16) + (1 - index);
         _lc[index]->completed[display] = (isCompleted == 1);
     }
+
     ClientInfoPackage getDeviceInfo()
     {
         struct ClientInfoPackage info;
-        info.messageId = 1;
+        info.messageId = CLIENT_INFO_V2;
         info.ip0 = WiFi.localIP()[0];
         info.ip1 = WiFi.localIP()[1];
         info.ip2 = WiFi.localIP()[2];
@@ -304,7 +301,7 @@ class TcpSocketProcess : public Process
     bool tcp_connected = false;
     uint8_t sleep = 0;
     WiFiClient client;
-    LedArray * _lc[2];
+    LedArray *_lc[2];
 };
 
 #endif
