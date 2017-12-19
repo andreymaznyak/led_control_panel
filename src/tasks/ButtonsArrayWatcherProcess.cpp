@@ -127,6 +127,9 @@ protected:
 
     char str[64];
     bool print = false;
+    uint8_t buttons_count = 0;
+    uint8_t pressButtons[16];
+
     for (uint8_t row = 8; row--;)
     {
       setData(1 << row);
@@ -154,31 +157,8 @@ protected:
             _buttons_status[index] += 2;
             print = true;
 
-            uint8_t arr_index = index < 16 ? 0 : 1,
-                    arr_number = (index < 16 ? index : index - 16) + 1;
-
-            _lc[0]->setChar(0, 0, '5');
-            _lc[0]->setChar(0, 1, 'E');
-            _lc[0]->setChar(0, 2, 'n');
-            _lc[0]->setChar(0, 3, 'd');
-#if BUTTONS_DEBUG > 0
-            _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
-#else
-            _lc[arr_index]->setDisplay(arr_number, 8888);
-            _tcp->sendButtonPress(index);
-            //if (_ws != NULL)
-            //{
-            // sprintf(str, "{\"number\":%d,\"row\":%d,\"col\":%d,\"count\":%d}", index, row, col, _buttons_status[index] >> 1);
-            // _ws->json((char *)&str, PRESS_BUTTON);
-            _lc[arr_index]->setDisplay(arr_number, 0);
-            //_lc[arr_index]->hideDisplay(arr_number + 1);
-            _lc[arr_index]->val[arr_number] = 0;
-            _lc[arr_index]->completed[arr_number] = 0;
-
-            // Для отладки добавить ESP.restart();
-            // ESP.restart();
-            //}
-#endif
+            pressButtons[buttons_count] = index;
+            buttons_count++;
             //Serial.printf("number %d (row %d, col %d) count %d on ...", index, row, col,  _buttons_status[index] >> 1);
           }
         }
@@ -190,6 +170,45 @@ protected:
           sprintf(str, " --> off \n");
         }
       }
+    }
+
+    for (uint8_t i = 0; i < buttons_count; i++)
+    {
+      uint8_t index = pressButtons[i];
+      if (index == 0)
+      {
+        ESP.restart();
+      }
+      else
+      {
+        index--;
+      }
+
+      uint8_t arr_index = index < 16 ? 0 : 1,
+              arr_number = (index < 16 ? index : index - 16) + 1;
+
+      _lc[0]->setChar(0, 0, '5');
+      _lc[0]->setChar(0, 1, 'E');
+      _lc[0]->setChar(0, 2, 'n');
+      _lc[0]->setChar(0, 3, 'd');
+#if BUTTONS_DEBUG > 0
+      _lc[arr_index]->setDisplay(arr_number, _buttons_status[index] >> 1);
+#else
+      _lc[arr_index]->setDisplay(arr_number, 8888);
+      _tcp->sendButtonPress(index);
+      //if (_ws != NULL)
+      //{
+      // sprintf(str, "{\"number\":%d,\"row\":%d,\"col\":%d,\"count\":%d}", index, row, col, _buttons_status[index] >> 1);
+      // _ws->json((char *)&str, PRESS_BUTTON);
+      _lc[arr_index]->setDisplay(arr_number, 0);
+      //_lc[arr_index]->hideDisplay(arr_number + 1);
+      _lc[arr_index]->val[arr_number] = 0;
+      _lc[arr_index]->completed[arr_number] = 0;
+
+      // Для отладки добавить ESP.restart();
+      // ESP.restart();
+      //}
+#endif
     }
     Serial.begin(115200);
     delay(10);

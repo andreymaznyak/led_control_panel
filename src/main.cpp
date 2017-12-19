@@ -5,6 +5,7 @@
 #include <GDBStub.h>
 #include <ProcessScheduler.h>
 #include <ArduinoOTA.h>
+#include <EEPROM.h>
 
 #include "./tasks/WebSocketProcess.cpp"
 #include "./tasks/TcpSocketProcess.cpp"
@@ -21,7 +22,12 @@
 
 Scheduler sched;
 
-LedArray *lc[2];
+LedArray *lc[2] = {NULL,
+                   NULL};
+
+// lc[0] = NULL;
+// lc[1] = NULL;
+
 WebSocketProcess *p_ws = NULL;
 TcpSocketProcess *p_tcp = NULL;
 
@@ -46,12 +52,65 @@ void setupWiFiAP()
 
   WiFi.softAP(AP_NameChar, "andrewhous");
 }
+
+void loadLedArrayFromEEPROM(LedArray *_lc[2])
+{
+  _lc[0]->setChar(0, 0, 'L');
+  _lc[0]->setChar(0, 1, 'd');
+  _lc[0]->setChar(0, 2, '0');
+  _lc[0]->setChar(0, 3, '1');
+  uint8_t buff[48]; // Буффер для данных стоек
+  const int startAddress = START_ADDRESS;
+  // for (uint8_t i = 0; i < 48; i++)
+  // {
+  //   EEPROM.write(startAddress + i, 0);
+  // }
+  // EEPROM.commit();
+
+  for (uint8_t i = 0; i < 48; i++)
+  {
+    buff[i] = EEPROM.read(startAddress + i);
+  }
+  if (_lc[0] != NULL)
+  {
+    for (int i = 0; i < 30; i += 2)
+    {
+      bool isCompleted = (buff[i]) >> 7;
+      uint16_t clientNumber = ((buff[i] << 8) & ~(1 << 15)) + (buff[i + 1]);
+      // Serial.printf("%u-%u-%u,", i, clientNumber, isCompleted);
+      uint8_t display = ((i / 2) % 16) + 1; // т.к первый это время, делаем + 1
+      if (clientNumber > 0 && clientNumber < 9999)
+      {
+        _lc[0]->setDisplay(display, clientNumber);
+        _lc[0]->completed[display] = isCompleted;
+      }
+    }
+  }
+
+  if (_lc[1] != NULL)
+  {
+    for (int i = 30; i < 46; i += 2)
+    {
+      bool isCompleted = (buff[i]) >> 7;
+      uint16_t clientNumber = ((buff[i] << 8) & ~(1 << 15)) + (buff[i + 1]);
+
+      // Serial.printf("%u-%u-%u,", i, clientNumber, isCompleted);
+      uint8_t display = (i / 2) - 15; // т.к первый это время, делаем + 1
+      if (clientNumber > 0 && clientNumber < 9999)
+      {
+        _lc[1]->setDisplay(display, clientNumber);
+        _lc[1]->completed[display] = isCompleted;
+      }
+    }
+  }
+}
 //static SocketIoClient * ws = NULL;
 void setup()
 {
+  EEPROM.begin(512);
   static OTAUpdateProcess otaUpdate(sched, HIGH_PRIORITY, 250, "0819");
   otaUpdate.add(true);
-  Serial.begin(115200);
+  Serial.begin(9600);
   ArduinoOTA.begin();
 
   setupWiFiAP();
@@ -74,6 +133,7 @@ void setup()
   lc[0]->setChar(0, 1, '0');
   lc[0]->setChar(0, 2, 'A');
   lc[0]->setChar(0, 3, 'd');
+  loadLedArrayFromEEPROM(lc);
   for (int i = 0; i < 5; i++)
   {
     ArduinoOTA.handle();
@@ -97,11 +157,6 @@ void setup()
   }
   Serial.println(WiFi.localIP());
 
-  //static SocketIoClient socket(sched, LOW_PRIORITY, 3000, server_ip, server_port);
-  static WebSocketProcess ws(sched, LOW_PRIORITY, 500, lc);
-  Serial.println(1);
-  p_ws = &ws;
-  Serial.println(2);
   static TcpSocketProcess tcp(sched, LOW_PRIORITY, 100, lc);
   p_tcp = &tcp;
 
@@ -122,12 +177,12 @@ void setup()
 
   //ledArrWather.add(true);
   clock.add(true);
-  ws.add(true);
+  // ws.add(true);
   tcp.add(true);
   Serial.println(4);
   char ipno2[64];
   IPAddress ipno = WiFi.localIP();
-  sprintf(ipno2, "{\"ip\":\"%d.%d.%d.%d\"}", ipno[0], ipno[1], ipno[2], ipno[3]);
+  // sprintf(ipno2, "{\"ip\":\"%d.%d.%d.%d\"}", ipno[0], ipno[1], ipno[2], ipno[3]);
 #ifdef DEBUG_SERIAL
   for (int i = 0; i < 64; i++)
   {
@@ -140,20 +195,13 @@ void setup()
   }
   Serial.println(ipno2);
 #endif
-  p_ws->json((char *)(&ipno2), CONNECT);
+  // p_ws->json((char *)(&ipno2), CONNECT);
 //console.log(WiFi.localIP());
 #ifdef DEBUG_SERIAL
   Serial.println(5);
   Serial.println("wait for rx-tx support");
 #endif
   watcher_orders.add(true);
-// for(uint8_t w= 6; w--;){
-//   lc[0]->setDisplay(0,w);
-//   Serial.println(w);
-//   delay(1000);
-// }
-//ws->sendMessage("Hello");
-//Serial.println(socket.sendMessage("Hello"))
 #ifdef BTN_WATCHER_ENABLE
   btnWather.add(true);
 #endif

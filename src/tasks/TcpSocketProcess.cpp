@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ProcessScheduler.h>
 #include <ESP8266WiFi.h>
+#include <EEPROM.h>
 #include "../config.h"
 #include "LedArray.cpp"
 /**
@@ -212,9 +213,10 @@ class TcpSocketProcess : public Process
         }
         else
         {
-            Serial.printf("Client disconnected. wait to reconnect %d", sleep);
-            delay(3000);
-            ESP.restart();
+            // Serial.printf("Client disconnected. wait to reconnect %d", sleep);
+            // delay(3000);
+            // ESP.restart();
+            connect();
         }
     }
 
@@ -241,6 +243,34 @@ class TcpSocketProcess : public Process
             tcp_connected = false;
         }
     }
+
+    void saveToEEPROM(void *pnt)
+    {
+        uint8_t *valPnt = (uint8_t *)pnt;
+        uint8_t buff[48]; // Буффер для данных стоек
+        const int startAddress = START_ADDRESS;
+        bool equals = true;
+        for (uint8_t i = 0; i < 48; i++)
+        {
+            buff[i] = EEPROM.read(startAddress + i);
+            uint8_t val = *(valPnt + i);
+            if (buff[i] != val) // ещем неравный байт
+            {
+                equals = false;
+                break;
+            }
+        }
+        if (equals == false)
+        {
+            for (int i = 0; i < 48; i++)
+            {
+                uint8_t val = *(valPnt + i);
+                EEPROM.write(startAddress + i, val);
+            }
+            EEPROM.commit();
+        }
+    }
+
     void updateNumbers(void *buff)
     {
 
@@ -273,6 +303,7 @@ class TcpSocketProcess : public Process
                 _lc[1]->completed[display] = isCompleted;
             }
         }
+        saveToEEPROM(&(info->numbers));
     }
     void setCompletedNumber(uint8_t indexInfo)
     {
